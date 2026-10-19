@@ -52,8 +52,32 @@ async function switchTrack(key,direct=false){
 }
 function stopMusic(){enabled=false;cancelFade();audio.pause();activeTrack=null;musicState(false);}
 function startMusic(){enabled=true;everChosen=true;activeTrack=null;switchTrack(currentScene,true);}
-$('#open-envelope').addEventListener('click',()=>{if(opened)return;opened=true;currentScene='intro';if(!everChosen||autoplayPending)startMusic();else if(enabled)switchTrack('intro');opening.classList.add('open');setTimeout(()=>{document.body.classList.remove('sealed');main.inert=false;opening.hidden=true;window.scrollTo({top:0,left:0,behavior:'instant'});requestAnimationFrame(()=>requestAnimationFrame(()=>{observe();updateScene();}));},reduced.matches?30:2600);});
-music.addEventListener('click',()=>{everChosen=true;if(enabled)stopMusic();else startMusic();});
+$('#open-envelope').addEventListener('click',()=>{
+  if(opened)return;
+
+  opened=true;
+  currentScene='intro';
+
+  if(!everChosen){
+    startMusic();
+  }else if(enabled){
+    switchTrack('intro');
+  }
+
+  opening.classList.add('open');
+
+  setTimeout(()=>{
+    document.body.classList.remove('sealed');
+    main.inert=false;
+    opening.hidden=true;
+    window.scrollTo({top:0,left:0,behavior:'instant'});
+
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      observe();
+      updateScene();
+    }));
+  },reduced.matches?30:2600);
+});
 function fabricMotion(){const a=document.querySelector('#fabric-breeze animate');if(!a)return;const root=a.ownerSVGElement;if(document.body.classList.contains('motion-paused'))root?.pauseAnimations?.();else root?.unpauseAnimations?.();}
 fabricMotion();
 motion?.addEventListener('click',()=>{const paused=document.body.classList.toggle('motion-paused');motion.setAttribute('aria-pressed',String(paused));motion.textContent=paused?'Play motion':'Pause motion';fabricMotion();});
@@ -71,7 +95,6 @@ audio.addEventListener('error',()=>{if(enabled){stopMusic();notify('Music could 
 async function arrivalMusic(){audio.volume=.6;try{await audio.play();enabled=true;activeTrack='intro';musicState(true);}catch(_){autoplayPending=true;}}
 function unlockArrival(){if(!autoplayPending||everChosen)return;autoplayPending=false;startMusic();}
 document.addEventListener('pointerdown',unlockArrival,{once:true});document.addEventListener('keydown',unlockArrival,{once:true});
-arrivalMusic();
 
 // Down arrows always follow document order, so inserted sections cannot be skipped.
 for(const cue of document.querySelectorAll('main .scroll-cue')){
